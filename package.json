@@ -8,7 +8,7 @@
     "url": "https://github.com/architect/functions"
   },
   "bugs": "https://github.com/architect/functions/issues",
-  "main": "src/index",
+  "_main": "src/index",
   "scripts": {
     "lint": "eslint --fix .",
     "test:unit": "cross-env PORT=6666 NODE_ENV=testing AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=bar AWS_REGION=us-west-1 tape test/unit/**/*-test.js test/unit/**/**/*-test.js | tap-spec",
