@@ -1,29 +1,27 @@
-let dynamo = require('./dynamo')
-let promisify = require('./promisify-object')
-let parallel = require('run-parallel')
+import {db, doc} from './dynamo'
+import promisify from './promisify-object'
+import parallel from 'run-parallel'
 
 /**
  * returns a data client
  */
-module.exports = function reflectFactory(tables, callback) {
-  let {db, doc} = dynamo
+export default function reflectFactory(tables, callback) {
   parallel({db, doc}, function done(err, {db, doc}) {
     if (err) throw err
     else {
-
-      let data = Object.keys(tables).reduce((client, tablename)=> {
+      let data = Object.keys(tables).reduce((client, tablename) => {
         client[tablename] = factory(tables[tablename])
         return client
       }, {})
 
       Object.defineProperty(data, '_db', {
         enumerable: false,
-        value: db
+        value: db,
       })
 
       Object.defineProperty(data, '_doc', {
         enumerable: false,
-        value: doc
+        value: doc,
       })
 
       data.reflect = async function reflect() {
@@ -71,7 +69,7 @@ module.exports = function reflectFactory(tables, callback) {
           update(params, callback) {
             params.TableName = TableName
             doc.update(params, callback)
-          }
+          },
         })
       }
 

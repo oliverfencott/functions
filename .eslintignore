@@ -2,3 +2,7 @@
 arc-proxy-*
 coverage/
 http/get-index
+rollup.config.js
+# src/ws
+# src/static
+# src/tables

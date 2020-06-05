@@ -1,10 +1,11 @@
 module.exports = {
   parserOptions: {
-    ecmaVersion: 2018
+    ecmaVersion: 2018,
+    sourceType: 'module',
   },
   env: {
-    node:true,
-    es6: true
+    node: true,
+    es6: true,
   },
   extends: 'eslint:recommended',
   rules: {
@@ -23,6 +24,6 @@ module.exports = {
     'no-prototype-builtins': 'off',
     'no-useless-catch': 'off',
     // style specific
-    'no-trailing-spaces': 'error'
-  }
+    'no-trailing-spaces': 'error',
+  },
 }

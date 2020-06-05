@@ -1,9 +1,7 @@
-let waterfall = require('run-waterfall')
-let old = require('./old')
-let lookup = require('../discovery')
-let factory = require('./factory')
-let sandbox = require('./sandbox')
-let dynamo = require('./dynamo')
+import waterfall from 'run-waterfall'
+import {tables as lookupTables} from '../discovery'
+import factory from './factory'
+import sandbox from './sandbox'
 
 // cheap client cache
 let client = false
@@ -34,35 +32,28 @@ function tables(callback) {
   let runningLocally = process.env.NODE_ENV === 'testing'
   if (runningLocally) {
     sandbox(callback)
-  }
-  else if (client) {
+  } else if (client) {
     callback(null, client)
-  }
-  else {
-    waterfall([
-      lookup.tables,
-      factory,
-      function(created, callback) {
-        client = created
-        callback(null, client)
-      }
-    ], callback)
+  } else {
+    waterfall(
+      [
+        lookupTables,
+        factory,
+        function (created, callback) {
+          client = created
+          callback(null, client)
+        },
+      ],
+      callback
+    )
   }
   return promise
 }
 
-// Export directly for fast use
-tables.doc = dynamo.direct.doc
-tables.db = dynamo.direct.db
-
 // Legacy compat methods
-tables.insert = old.insert
-tables.modify = old.modify
-tables.update = old.update
-tables.remove = old.remove
-tables.destroy = old.destroy
-tables.all = old.all
-tables.save = old.save
-tables.change = old.change
+export {insert, modify, update, remove, destroy, all, save, change} from './old'
 
-module.exports = tables
+// Export directly for fast use
+export {directDoc as doc, directDb as db} from './dynamo'
+
+export {tables}

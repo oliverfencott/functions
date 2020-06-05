@@ -1,16 +1,12 @@
-let dynamo = require('./dynamo')
-let promisify = require('./promisify-object')
-let parallel = require('run-parallel')
+import {db, doc} from './dynamo'
+import promisify from './promisify-object'
+import parallel from 'run-parallel'
 
 /**
  * returns a data client
  */
-module.exports = function sandbox(callback) {
-  parallel([
-    dynamo.db,
-    dynamo.doc
-  ],
-  function _done(err, results) {
+export default function sandbox(callback) {
+  parallel([db, doc], function _done(err, results) {
     if (err) callback(err)
     else {
       let db = results[0]
@@ -18,24 +14,26 @@ module.exports = function sandbox(callback) {
       db.listTables({}, function listed(err, result) {
         if (err) callback(err)
         else {
-          let reduce = (a, b)=> Object.assign({}, a, b)
-          let dontcare = tbl=> tbl != 'arc-sessions' && tbl.includes('production') === false
+          let reduce = (a, b) => Object.assign({}, a, b)
+          let dontcare = (tbl) => tbl != 'arc-sessions' && tbl.includes('production') === false
           let tables = result.TableNames.filter(dontcare)
-          let data = tables.map(function fmt(tbl) {
-            let parts = tbl.split('-staging-')
-            let app = parts.shift()
-            let name = parts.join('')
-            return client(app)(name)
-          }).reduce(reduce, {})
+          let data = tables
+            .map(function fmt(tbl) {
+              let parts = tbl.split('-staging-')
+              let app = parts.shift()
+              let name = parts.join('')
+              return client(app)(name)
+            })
+            .reduce(reduce, {})
 
           Object.defineProperty(data, '_db', {
             enumerable: false,
-            value: db
+            value: db,
           })
 
           Object.defineProperty(data, '_doc', {
             enumerable: false,
-            value: doc
+            value: doc,
           })
 
           data.reflect = async function reflect() {
@@ -49,7 +47,7 @@ module.exports = function sandbox(callback) {
           }
 
           data._name = function _name(name) {
-            return tables.filter(t => RegExp(`^.*${name}$`).test(t))
+            return tables.filter((t) => RegExp(`^.*${name}$`).test(t))
           }
 
           callback(null, data)
@@ -57,8 +55,8 @@ module.exports = function sandbox(callback) {
       })
 
       function client(appname) {
-        return function(tablename) {
-          let name = nom=> `${appname}-staging-${nom}`
+        return function (tablename) {
+          let name = (nom) => `${appname}-staging-${nom}`
           let TableName = name(tablename)
           let client = {
             delete(key, callback) {
@@ -96,7 +94,7 @@ module.exports = function sandbox(callback) {
             update(params, callback) {
               params.TableName = TableName
               doc.update(params, callback)
-            }
+            },
           }
           let result = {}
           result[tablename] = promisify(client)
@@ -105,5 +103,4 @@ module.exports = function sandbox(callback) {
       }
     }
   })
-
 }

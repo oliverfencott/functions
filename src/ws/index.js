@@ -1,5 +1,5 @@
-let sandbox = require('./send-sandbox')
-let run = require('./send')
+import sandbox from './send-sandbox'
+import run from './send'
 
 /**
  * arc.ws.send
@@ -12,7 +12,7 @@ let run = require('./send')
  * @param {Function} callback - a node style errback (optional)
  * @returns {Promise} - returned if no callback is supplied
  */
-module.exports = function send({id, payload}, callback) {
+export default function send({id, payload}, callback) {
   // create a promise if no callback is defined
   let promise
   if (!callback) {

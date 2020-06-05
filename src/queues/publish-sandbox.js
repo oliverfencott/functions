@@ -1,6 +1,6 @@
-let http = require('http')
+import http from 'http'
 
-module.exports = function sandbox(params, callback) {
+export default function sandbox(params, callback) {
   let port = process.env.ARC_EVENTS_PORT || 3334
   let req = http.request({
     method: 'POST',

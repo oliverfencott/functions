@@ -1,7 +1,7 @@
 // accepts an object and promisifies all keys
-module.exports = function pfy(obj) {
+export default function pfy(obj) {
   var copy = {}
-  Object.keys(obj).forEach(k=> {
+  Object.keys(obj).forEach((k) => {
     copy[k] = promised(obj[k])
   })
   return copy
@@ -11,13 +11,12 @@ module.exports = function pfy(obj) {
 function promised(fn) {
   return function _promisified(params, callback) {
     if (!callback) {
-      return new Promise(function(res, rej) {
-        fn(params, function(err, result) {
+      return new Promise(function (res, rej) {
+        fn(params, function (err, result) {
           err ? rej(err) : res(result)
         })
       })
-    }
-    else {
+    } else {
       fn(params, callback)
     }
   }

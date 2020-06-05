@@ -1,12 +1,12 @@
-let aws = require('aws-sdk')
-let https = require('https')
+import aws from 'aws-sdk'
+import https from 'https'
 
 /**
  * Instantiates Dynamo service interfaces
  * - Internal APIs should use `db` + `doc` to instantiate DynamoDB interfaces
  * - Avoid using `direct.db` + `direct.doc`: as it's an issue vector for using Functions in certain test harnesses!
  */
-function getDynamo (type, callback) {
+function getDynamo(type, callback) {
   if (!type) throw ReferenceError('Must supply Dynamo service interface type')
 
   let testing = process.env.NODE_ENV === 'testing'
@@ -14,7 +14,7 @@ function getDynamo (type, callback) {
   let port = process.env.ARC_TABLES_PORT || 5000
   let local = {
     endpoint: new aws.Endpoint(`http://localhost:${port}`),
-    region: process.env.AWS_REGION || 'us-west-2' // Do not assume region is set!
+    region: process.env.AWS_REGION || 'us-west-2', // Do not assume region is set!
   }
   let DB = aws.DynamoDB
   let Doc = aws.DynamoDB.DocumentClient
@@ -34,21 +34,17 @@ function getDynamo (type, callback) {
       rejectUnauthorized: true,
     })
     aws.config.update({
-      httpOptions: {agent}
+      httpOptions: {agent},
     })
     // TODO? migrate to using `AWS_NODEJS_CONNECTION_REUSE_ENABLED`?
   }
 
   if (type === 'db') {
-    dynamo = testing
-      ? new DB(local)
-      : new DB
+    dynamo = testing ? new DB(local) : new DB()
   }
 
   if (type === 'doc') {
-    dynamo = testing
-      ? new Doc(local)
-      : new Doc
+    dynamo = testing ? new Doc(local) : new Doc()
   }
 
   if (type === 'session') {
@@ -60,23 +56,19 @@ function getDynamo (type, callback) {
       },
       put(params, callback) {
         callback()
-      }
+      },
     }
-    dynamo = testing
-      ? new Doc(local)
-      : (passthru ? mock : new Doc)
+    dynamo = testing ? new Doc(local) : passthru ? mock : new Doc()
   }
 
   if (!callback) return dynamo
   else callback(null, dynamo)
 }
 
-module.exports = {
-  db: getDynamo.bind({}, 'db'),
-  doc: getDynamo.bind({}, 'doc'),
-  session: getDynamo.bind({}, 'session'),
-  direct: {
-    db: getDynamo('db'),
-    doc: getDynamo('doc')
-  }
-}
+const db = getDynamo.bind({}, 'db')
+const doc = getDynamo.bind({}, 'doc')
+const session = getDynamo.bind({}, 'session')
+const directDb = getDynamo('db')
+const directDoc = getDynamo('doc')
+
+export {db, doc, session, directDb, directDoc}

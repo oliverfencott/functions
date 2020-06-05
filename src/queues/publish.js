@@ -1,21 +1,18 @@
-let sandbox = require('./publish-sandbox')
-let queue = require('./publish-queue')
+import sandbox from './publish-sandbox'
+import queue from './publish-queue'
 
 /**
  * invoke a queue lambda by sqs queue name
  */
-module.exports = function publish(params, callback) {
+export default function publish(params, callback) {
+  if (!params.name) throw ReferenceError('missing params.name')
 
-  if (!params.name)
-    throw ReferenceError('missing params.name')
-
-  if (!params.payload)
-    throw ReferenceError('missing params.payload')
+  if (!params.payload) throw ReferenceError('missing params.payload')
 
   let promise
   if (!callback) {
     promise = new Promise((resolve, reject) => {
-      callback = function errback (err, result) {
+      callback = function errback(err, result) {
         err ? reject(err) : resolve(result)
       }
     })
